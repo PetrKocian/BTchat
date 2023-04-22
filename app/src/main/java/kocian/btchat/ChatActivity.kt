@@ -69,12 +69,11 @@ class ChatActivity : AppCompatActivity() {
         {
             val textField = findViewById<EditText>(R.id.messageBox)
             var text = textField.text.toString()
-            if(bMgr!!.sendMessage(text))
-            {
-                text = "> " + text
-                messageAdapter.addMessage(text)
-                textField.setText("")
-            }
+            bMgr!!.sendMessage(text)
+            text = "> " + text
+            messageAdapter.addMessage(text)
+            textField.setText("")
+
         }
     }
 

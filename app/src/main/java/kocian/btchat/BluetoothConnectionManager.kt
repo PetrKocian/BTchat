@@ -31,7 +31,6 @@ class BluetoothConnectionManager() {
     private var connectedThread : MyBluetoothService.ConnectedThread ?= null
     private var recyclerView : RecyclerView ?= null
     private var messageAdapter : MessageAdapter ?= null
-    private var alreadyConnectedFlag = false
     private val handler = Handler(Handler.Callback { message ->
         // Read the message here
         if(message.what == MESSAGE_READ)
@@ -97,24 +96,14 @@ class BluetoothConnectionManager() {
             button?.visibility = View.VISIBLE
             textField?.visibility = View.VISIBLE
         })
-        alreadyConnectedFlag = true
     }
 
-    public fun sendMessage(message: String): Boolean {
+    public fun sendMessage(message: String) {
         connectedThread?.write(message.toByteArray())
         if(connectedThread == null || !connectedThread!!.isAlive()){
-            if(alreadyConnectedFlag)
-            {
-                Toast.makeText(mContext, "DEVICE DISCONNECTED", Toast.LENGTH_LONG).show()
-                mActivity?.finish()
-            }
-            else
-            {
-                Toast.makeText(mContext, "COULDN'T SEND MESSAGE", Toast.LENGTH_LONG).show()
-            }
-            return false
+            Toast.makeText(mContext, "DEVICE DISCONNECTED", Toast.LENGTH_LONG).show()
+            mActivity?.finish()
         }
-        return true
     }
 
     public fun disconnect(){
