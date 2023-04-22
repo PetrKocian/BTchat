@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,21 +14,24 @@ import androidx.recyclerview.widget.RecyclerView
 
 class ChatActivity : AppCompatActivity() {
     var bMgr : BluetoothConnectionManager ?= null
-    val messageAdapter = MessageAdapter(mutableListOf("foo", "bar", "baz")
-    )
+    val messageAdapter = MessageAdapter()
     var test = 0
     var rand = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        val messagebox = findViewById<TextView>(R.id.chatbox)
+        val textField = findViewById<EditText>(R.id.messageBox)
+        val button = findViewById<Button>(R.id.sendMessage)
+        button?.visibility = View.INVISIBLE
+        textField?.visibility = View.INVISIBLE
+
         val recyclerView = findViewById<RecyclerView>(R.id.messageRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = messageAdapter
         messageAdapter.provideRecyclerView(recyclerView)
 
-        bMgr = BluetoothConnectionManager(this,messagebox, recyclerView, messageAdapter)
+        bMgr = BluetoothConnectionManager(this, this, recyclerView, messageAdapter)
 
         val device = intent.getStringExtra("device") as String
 
@@ -37,7 +41,7 @@ class ChatActivity : AppCompatActivity() {
         }
         else
         {
-            bMgr!!.startconnection(device)
+            bMgr!!.startConnection(device)
         }
 
     }
@@ -64,10 +68,13 @@ class ChatActivity : AppCompatActivity() {
         else
         {
             val textField = findViewById<EditText>(R.id.messageBox)
-            val text = "> " + textField.text.toString()
-            bMgr!!.sendMessage(text)
-            messageAdapter.addMessage(text)
-            textField.setText("")
+            var text = textField.text.toString()
+            if(bMgr!!.sendMessage(text))
+            {
+                text = "> " + text
+                messageAdapter.addMessage(text)
+                textField.setText("")
+            }
         }
     }
 

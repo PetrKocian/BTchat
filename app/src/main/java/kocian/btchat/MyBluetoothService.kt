@@ -9,8 +9,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-private const val TAG = "MY_APP_DEBUG_TAG"
-
 // Defines several constants used when transmitting messages between the
 // service and the UI.
 const val MESSAGE_READ: Int = 0

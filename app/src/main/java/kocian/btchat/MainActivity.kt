@@ -25,6 +25,7 @@ import androidx.core.app.ActivityCompat
 import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
+import kotlin.concurrent.thread
 
 private const val REQUEST_ENABLE_BT = 1
 
@@ -36,64 +37,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val messagebox = findViewById<TextView>(R.id.messagebox)
+        turnBluetoothOn()
 
-        bMgr = BluetoothConnectionManager(this,messagebox)
+        bMgr = BluetoothConnectionManager(this,this)
 
-    }
-
-    public fun mam_bt(v: View){
-        bMgr!!.mam_bt_mrg()
-    }
-
-    public fun send_message(v: View){
-        val textField = findViewById<EditText>(R.id.editMessageText)
-        val text = textField.text.toString()
-        bMgr!!.sendMessage(text)
+        populateSpinner()
     }
 
     val regiterForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            Toast.makeText(this@MainActivity, "POVEDLO SE ZAPNOUT BT", Toast.LENGTH_LONG).show()
+            populateSpinner()
         }
         else
         {
-            Toast.makeText(this@MainActivity, "BT MUSI BYT ZAPNUT ABY APPKA BEZELA", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@MainActivity, "Bluetooth has to be turned ON", Toast.LENGTH_LONG).show()
+            finish()
         }
     }
 
-    public fun zapni_bt(v: View){
+    public fun turnBluetoothOn() {
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
         if (bluetoothAdapter == null) {
-            Toast.makeText(this@MainActivity, "NEMAM BT", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity, "Bluetooth is required for this app to work", Toast.LENGTH_LONG).show()
+            finish()
         }
         else if (bluetoothAdapter?.isEnabled == false) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             regiterForResult.launch(enableBtIntent)
         }
-        else
-        {
-            Toast.makeText(this@MainActivity, "BT UZ JE ZAPNUTY", Toast.LENGTH_LONG).show()
-        }
     }
 
-
-    @SuppressLint("MissingPermission")
-    public fun ukaz_dev(v: View){
-        bMgr!!.ukaz_dev_mrg()
-    }
-
-    public fun pripoj_dev(v: View){
-        var spinner = findViewById<Spinner>(R.id.spinner)
-        val device = spinner.selectedItem as String
-        bMgr!!.startconnection(device)
-    }
-
-    public fun populate_spinner(v:View){
-        var devices = bMgr!!.gimme_dev_mrg()
+    public fun populateSpinner(){
+        var devices = bMgr!!.getBluetoothDevicesNames()
         var spinner = findViewById<Spinner>(R.id.spinner)
         devices!!.add("test")
         val adapter = ArrayAdapter(spinner.context, android.R.layout.simple_spinner_item, devices!!.toList())
@@ -101,8 +79,14 @@ class MainActivity : AppCompatActivity() {
         spinner.adapter = adapter
     }
 
-
-    public fun connect_to_device(v: View){
+    public fun connectToDevice(v: View){
+        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
+        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
+        if(bluetoothAdapter?.isEnabled == false)
+        {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            regiterForResult.launch(enableBtIntent)
+        }
         val intent = Intent(this, ChatActivity::class.java)
         var spinner = findViewById<Spinner>(R.id.spinner)
         val device = spinner.selectedItem as String
