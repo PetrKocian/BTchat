@@ -14,8 +14,10 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 
@@ -81,7 +83,6 @@ class BluetoothConnectionManager() {
     public fun manageMyConnectedSocket(socket: BluetoothSocket) {
         val bluetoothService = MyBluetoothService(handler)
         connectedThread = bluetoothService.ConnectedThread(socket)
-
         connectedThread?.start()
         mActivity?.runOnUiThread(Runnable {
             Toast.makeText(
@@ -93,8 +94,10 @@ class BluetoothConnectionManager() {
         mActivity?.runOnUiThread(Runnable {
             val textField = mActivity?.findViewById<EditText>(R.id.messageBox)
             val button = mActivity?.findViewById<Button>(R.id.sendMessage)
+            val connecting = mActivity?.findViewById<TextView>(R.id.ConnectingText)
             button?.visibility = View.VISIBLE
             textField?.visibility = View.VISIBLE
+            connecting?.visibility = View.INVISIBLE
         })
     }
 
@@ -110,6 +113,7 @@ class BluetoothConnectionManager() {
         if(connectedThread != null && connectedThread!!.isAlive)
         {
             connectedThread!!.cancel()
+            Toast.makeText(mContext, "DISCONNECTED", Toast.LENGTH_LONG).show()
         }
         if(connectThread != null && connectThread!!.isAlive)
         {
@@ -130,8 +134,8 @@ class BluetoothConnectionManager() {
         }
         if(deviceToConnect != null)
         {
-            connectThread = ConnectThread(deviceToConnect!!)
-            connectThread?.start()
+            val aconnectThread = ConnectThread(deviceToConnect!!)
+            aconnectThread?.start()
         }
         else
         {
@@ -144,9 +148,7 @@ class BluetoothConnectionManager() {
     private inner class ConnectThread(device: BluetoothDevice) : Thread() {
 
         private val mmSocket: BluetoothSocket? by lazy(LazyThreadSafetyMode.NONE) {
-
             device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"))
-
         }
 
         public override fun run() {
@@ -156,22 +158,22 @@ class BluetoothConnectionManager() {
             mmSocket?.let { socket ->
                 // Connect to the remote device through the socket. This call blocks
                 // until it succeeds or throws an exception.
-
                 try {
                     socket.connect()
                 }
                 catch (e: IOException) {
-                    mActivity?.runOnUiThread(Runnable {
-                        Toast.makeText(
-                            mActivity,
-                            "COULDN'T CONNECT",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    })
+                    if(mActivity?.isFinishing == false) {
+                        mActivity?.runOnUiThread(Runnable {
+                            Toast.makeText(
+                                mActivity,
+                                "COULDN'T CONNECT",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        })
+                    }
                     mActivity?.finish()
                     connectionSuccessful = false
                 }
-
                 // The connection attempt succeeded. Perform work associated with
                 // the connection in a separate thread.
                 if(connectionSuccessful)
