@@ -37,21 +37,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //turn BT on, create an instance of BT manager to get paired devices and populate the spinner with them
         turnBluetoothOn()
-
         bMgr = BluetoothConnectionManager(this,this)
-
         populateSpinner()
     }
 
+    //handles turning on BT
     val regiterForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
+            //populate spinner after BT was turned on
             populateSpinner()
         }
         else
         {
+            //close the application
             Toast.makeText(this@MainActivity, "Bluetooth has to be turned ON", Toast.LENGTH_LONG).show()
             finish()
         }
@@ -60,10 +62,12 @@ class MainActivity : AppCompatActivity() {
     public fun turnBluetoothOn() {
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
+        //check if phone has BT adapter
         if (bluetoothAdapter == null) {
             Toast.makeText(this@MainActivity, "Bluetooth is required for this app to work", Toast.LENGTH_LONG).show()
             finish()
         }
+        //ask to enable BT if not on
         else if (bluetoothAdapter?.isEnabled == false) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             regiterForResult.launch(enableBtIntent)
@@ -71,15 +75,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     public fun populateSpinner(){
-        var devices = bMgr!!.getBluetoothDevicesNames()
+        //get names of BT devices and spinner reference
+        var devices = bMgr?.getBluetoothDevicesNames()
         var spinner = findViewById<Spinner>(R.id.spinner)
-        devices!!.add("test")
-        val adapter = ArrayAdapter(spinner.context, android.R.layout.simple_spinner_item, devices!!.toList())
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = adapter
+        devices?.add("test")
+        if(devices != null)
+        {
+            //if the device list is not null, fill the spinner
+            val adapter = ArrayAdapter(spinner.context, android.R.layout.simple_spinner_item, devices!!.toList())
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+        }
     }
 
     public fun connectToDevice(v: View){
+        //enable BT in case it was disabled in the meantime
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
         if(bluetoothAdapter?.isEnabled == false)
@@ -87,7 +97,9 @@ class MainActivity : AppCompatActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             regiterForResult.launch(enableBtIntent)
         }
+        //start new activity to chat with the device
         val intent = Intent(this, ChatActivity::class.java)
+        //pass the device name to the activity
         var spinner = findViewById<Spinner>(R.id.spinner)
         val device = spinner.selectedItem as String
         intent.putExtra("device", device)

@@ -21,22 +21,29 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
+        //set message window and send button invisible while connecting
         val textField = findViewById<EditText>(R.id.messageBox)
         val button = findViewById<Button>(R.id.sendMessage)
         button?.visibility = View.INVISIBLE
         textField?.visibility = View.INVISIBLE
 
+        //set up message adapter for recycler view
         val recyclerView = findViewById<RecyclerView>(R.id.messageRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = messageAdapter
         messageAdapter.provideRecyclerView(recyclerView)
 
+        //start connecting to the provided device
         bMgr = BluetoothConnectionManager(this, this, recyclerView, messageAdapter)
-
         val device = intent.getStringExtra("device") as String
-
+        title = device
         if(device == "test")
         {
+            val connectingText = findViewById<TextView>(R.id.ConnectingText)
+            connectingText?.visibility = View.INVISIBLE
+            button?.visibility = View.VISIBLE
+            textField?.visibility = View.VISIBLE
+
             test = 1
         }
         else
@@ -67,6 +74,7 @@ class ChatActivity : AppCompatActivity() {
         }
         else
         {
+            //get message from text field, send the message, display it in the recycler view and erase the text field
             val textField = findViewById<EditText>(R.id.messageBox)
             var text = textField.text.toString()
             bMgr!!.sendMessage(text)
