@@ -86,12 +86,13 @@ class ChatActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Call your function here
+        // disconnect the device and close the activity
         disconnect()
         super.onBackPressed()
     }
 
     private fun disconnect(){
+        //call BT manager disconnect
         if(test == 0 && bMgr != null)
         {
             bMgr!!.disconnect()
