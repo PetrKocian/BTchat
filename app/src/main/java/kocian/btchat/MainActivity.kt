@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.View
+import android.webkit.WebView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
@@ -32,10 +33,13 @@ private const val REQUEST_ENABLE_BT = 1
 
 class MainActivity : AppCompatActivity() {
     var bMgr : BluetoothConnectionManager ?= null
-
+    var myWebView :WebView ?= null
+    var webViewOn = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        myWebView = findViewById(R.id.webview)
 
         //turn BT on, create an instance of BT manager to get paired devices and populate the spinner with them
         turnBluetoothOn()
@@ -104,6 +108,23 @@ class MainActivity : AppCompatActivity() {
         val device = spinner.selectedItem as String
         intent.putExtra("device", device)
         startActivity(intent)
+    }
+
+    public fun about(v: View){
+        myWebView = findViewById<WebView>(R.id.webview)
+        myWebView?.loadUrl("https://github.com/PetrKocian/BTchat")
+        myWebView?.visibility = View.VISIBLE
+        webViewOn = true
+    }
+
+    override fun onBackPressed() {
+        if(webViewOn == true){
+            myWebView?.visibility = View.INVISIBLE
+            webViewOn = false
+        } else {
+            // If the WebView cannot go back, close the app or perform other actions
+            super.onBackPressed()
+        }
     }
 
 }
