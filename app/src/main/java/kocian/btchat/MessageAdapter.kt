@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
+// Adapter for recyclerview
 class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     private var recyclerView: RecyclerView? = null
     private val messages = mutableListOf<String>()
@@ -35,6 +36,7 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
 
     fun addMessage(message: String) {
         messages.add(message)
+        // Scroll to bottom to see new message
         notifyItemInserted(messages.size - 1)
         if(recyclerView != null)
         {

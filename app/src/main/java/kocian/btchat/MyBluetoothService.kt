@@ -9,17 +9,15 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-// Defines several constants used when transmitting messages between the
-// service and the UI.
+
 const val MESSAGE_READ: Int = 0
 const val MESSAGE_WRITE: Int = 1
 const val MESSAGE_TOAST: Int = 2
 
 class MyBluetoothService(
-    // handler that gets info from Bluetooth service
     private val handler: Handler
 ) {
-
+    //thread to communicate with the connected device, identified by the socket
     inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
 
         private val mmInStream: InputStream = mmSocket.inputStream
@@ -47,7 +45,7 @@ class MyBluetoothService(
             }
         }
 
-        // Call this from the main activity to send data to the remote device.
+        // Function to send data to the connected device
         fun write(bytes: ByteArray) {
             try {
                 mmOutStream.write(bytes)
@@ -70,7 +68,7 @@ class MyBluetoothService(
             writtenMsg.sendToTarget()
         }
 
-        // Call this method from the main activity to shut down the connection.
+        // Closes the connection
         fun cancel() {
             try {
                 mmSocket.close()

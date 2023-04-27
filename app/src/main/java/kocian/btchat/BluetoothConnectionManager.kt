@@ -22,14 +22,13 @@ import java.io.IOException
 import java.util.*
 
 
-//class to take care of all things related to bluetooth connection
+//class to take care of all things related to BT connection
 
 class BluetoothConnectionManager() {
     private var mBluetoothManager : BluetoothManager ?= null
     private var mBluetoothAdapter: BluetoothAdapter  ?= null
     private var mContext : Context ?= null
     private var mActivity : Activity ?= null
-    private var connectThread : ConnectThread ?= null
     private var connectedThread : MyBluetoothService.ConnectedThread ?= null
     private var recyclerView : RecyclerView ?= null
     private var messageAdapter : MessageAdapter ?= null
@@ -44,6 +43,8 @@ class BluetoothConnectionManager() {
         true
 
     })
+
+    //constructor to use for connecting to a device -> recyclerview to display messages
     constructor(activity: Activity, context: Context?, recyclerViewIn: RecyclerView, messageAdapterIn: MessageAdapter) : this() {
         if (context != null) {
             mContext = context
@@ -57,6 +58,7 @@ class BluetoothConnectionManager() {
         recyclerView = recyclerViewIn
     }
 
+    //constructor to access paired devices to choose which one to connect to
     constructor(activity: Activity, context: Context?) : this() {
         if (context != null) {
             mContext = context
@@ -68,6 +70,7 @@ class BluetoothConnectionManager() {
         mBluetoothAdapter = mBluetoothManager?.getAdapter()
     }
 
+    //get paired devices names as string list
     @SuppressLint("MissingPermission")
     public fun getBluetoothDevicesNames(): MutableSet<String>? {
         val pairedDevices: Set<BluetoothDevice>? = mBluetoothAdapter?.bondedDevices
@@ -80,10 +83,13 @@ class BluetoothConnectionManager() {
         return pairedDevicesNames
     }
 
+    //called from thread which establishes connection - starts connected thread
     public fun manageMyConnectedSocket(socket: BluetoothSocket) {
+        //start connected thread
         val bluetoothService = MyBluetoothService(handler)
         connectedThread = bluetoothService.ConnectedThread(socket)
         connectedThread?.start()
+        //display connected toast
         mActivity?.runOnUiThread(Runnable {
             Toast.makeText(
                 mActivity,
@@ -91,6 +97,7 @@ class BluetoothConnectionManager() {
                 Toast.LENGTH_SHORT
             ).show()
         })
+        //hide "connecting" text and display chat recyclerview and send textfield/button
         mActivity?.runOnUiThread(Runnable {
             val textField = mActivity?.findViewById<EditText>(R.id.messageBox)
             val button = mActivity?.findViewById<Button>(R.id.sendMessage)
@@ -101,6 +108,7 @@ class BluetoothConnectionManager() {
         })
     }
 
+    //sends message to connected device, if a device is not connected -> finish chat activity
     public fun sendMessage(message: String) {
         connectedThread?.write(message.toByteArray())
         if(connectedThread == null || !connectedThread!!.isAlive()){
@@ -109,20 +117,20 @@ class BluetoothConnectionManager() {
         }
     }
 
+    //disconnect function to cancel all connecting/connected threads
     public fun disconnect(){
         if(connectedThread != null && connectedThread!!.isAlive)
         {
+            //if device was connected -> display toast
             connectedThread!!.cancel()
             Toast.makeText(mContext, "DISCONNECTED", Toast.LENGTH_LONG).show()
         }
-        if(connectThread != null && connectThread!!.isAlive)
-        {
-            connectThread!!.cancel()
-        }
     }
 
+    //start connection to device with specified name
     @SuppressLint("MissingPermission")
     public fun startConnection(deviceNameIn: String){
+        //get paired devices and search for selected device
         val pairedDevices: Set<BluetoothDevice>? = mBluetoothAdapter?.bondedDevices
         var deviceToConnect: BluetoothDevice? = null
         pairedDevices?.forEach { device ->
@@ -132,18 +140,21 @@ class BluetoothConnectionManager() {
                 deviceToConnect = device
             }
         }
+        //if wanted device is found, start thread which tries to establish BT connection
         if(deviceToConnect != null)
         {
-            val aconnectThread = ConnectThread(deviceToConnect!!)
-            aconnectThread?.start()
+            val connectThread = ConnectThread(deviceToConnect!!)
+            connectThread?.start()
         }
         else
         {
+            //closes chat activity and returns to main activity
             Toast.makeText(mContext, "SOMETHING WENT WRONG", Toast.LENGTH_LONG).show()
             mActivity?.finish()
         }
     }
 
+    //thread to establish connection to a BT device
     @SuppressLint("MissingPermission")
     private inner class ConnectThread(device: BluetoothDevice) : Thread() {
 
@@ -156,12 +167,12 @@ class BluetoothConnectionManager() {
             mBluetoothAdapter?.cancelDiscovery()
             var connectionSuccessful = true
             mmSocket?.let { socket ->
-                // Connect to the remote device through the socket. This call blocks
-                // until it succeeds or throws an exception.
+                // Connect to the remote device through the socket
                 try {
                     socket.connect()
                 }
                 catch (e: IOException) {
+                    //display message and close activity
                     if(mActivity?.isFinishing == false) {
                         mActivity?.runOnUiThread(Runnable {
                             Toast.makeText(
@@ -174,22 +185,12 @@ class BluetoothConnectionManager() {
                     mActivity?.finish()
                     connectionSuccessful = false
                 }
-                // The connection attempt succeeded. Perform work associated with
-                // the connection in a separate thread.
+                //start connected thread to manage the BT connection
                 if(connectionSuccessful)
                 {
                     Looper.prepare()
                     manageMyConnectedSocket(socket)
                 }
-            }
-        }
-
-        // Closes the client socket and causes the thread to finish.
-        fun cancel() {
-            try {
-                mmSocket?.close()
-            } catch (e: IOException) {
-                Log.e(TAG, "Could not close the client socket", e)
             }
         }
     }
