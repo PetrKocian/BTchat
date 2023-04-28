@@ -1,32 +1,15 @@
 package kocian.btchat
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothSocket
-import android.content.ContentValues.TAG
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.View
 import android.webkit.WebView
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import org.w3c.dom.Text
-import java.io.IOException
-import java.util.*
-import kotlin.concurrent.thread
 
 private const val REQUEST_ENABLE_BT = 1
 
@@ -35,11 +18,19 @@ class MainActivity : AppCompatActivity() {
     var bMgr : BluetoothConnectionManager ?= null
     var myWebView :WebView ?= null
     var webViewOn = false
+    var spinner : Spinner ?= null
+    var connectButton : Button ?= null
+    var infoButton : ImageButton?= null
+    var text : TextView ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         myWebView = findViewById(R.id.webview)
+        spinner = findViewById(R.id.spinner)
+        connectButton = findViewById(R.id.connectButton)
+        text = findViewById(R.id.mainText)
+        infoButton = findViewById(R.id.infoButton)
 
         //turn BT on, create an instance of BT manager to get paired devices and populate the spinner with them
         turnBluetoothOn()
@@ -81,14 +72,13 @@ class MainActivity : AppCompatActivity() {
     public fun populateSpinner(){
         //get names of BT devices and spinner reference
         var devices = bMgr?.getBluetoothDevicesNames()
-        var spinner = findViewById<Spinner>(R.id.spinner)
         devices?.add("test")
         if(devices != null)
         {
             //if the device list is not null, fill the spinner
-            val adapter = ArrayAdapter(spinner.context, android.R.layout.simple_spinner_item, devices!!.toList())
+            val adapter = ArrayAdapter(spinner!!.context, android.R.layout.simple_spinner_item, devices!!.toList())
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinner.adapter = adapter
+            spinner!!.adapter = adapter
         }
     }
 
@@ -114,12 +104,21 @@ class MainActivity : AppCompatActivity() {
         myWebView = findViewById<WebView>(R.id.webview)
         myWebView?.loadUrl("https://github.com/PetrKocian/BTchat")
         myWebView?.visibility = View.VISIBLE
+        spinner!!.visibility = View.INVISIBLE
+        connectButton!!.visibility = View.INVISIBLE
+        infoButton!!.visibility = View.INVISIBLE
+        text!!.visibility = View.INVISIBLE
+
         webViewOn = true
     }
 
     override fun onBackPressed() {
         if(webViewOn == true){
             myWebView?.visibility = View.INVISIBLE
+            spinner!!.visibility = View.VISIBLE
+            connectButton!!.visibility = View.VISIBLE
+            infoButton!!.visibility = View.VISIBLE
+            text!!.visibility = View.VISIBLE
             webViewOn = false
         } else {
             // If the WebView cannot go back, close the app or perform other actions
