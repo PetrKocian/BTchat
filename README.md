@@ -1,5 +1,6 @@
 # BTchat
 Bluetooth Chat App for Android
+Developed for communication with Raspberry Pi/Arduino boards using a Bluetooth module (e.g. JDY-33)
 
 # Usage
 The app requires Bluetooth, otherwise it doesn't work.
