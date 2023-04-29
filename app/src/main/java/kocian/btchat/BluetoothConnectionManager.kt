@@ -38,7 +38,8 @@ class BluetoothConnectionManager() {
         {
             val messageText = message.obj as ByteArray
             val msg = "< " + messageText.toString(Charsets.UTF_8)
-            messageAdapter?.addMessage(msg)
+            val finalmsg = msg.substringBefore("\n")
+            messageAdapter?.addMessage(finalmsg)
         }
         true
 
@@ -104,6 +105,7 @@ class BluetoothConnectionManager() {
             val connecting = mActivity?.findViewById<TextView>(R.id.ConnectingText)
             button?.visibility = View.VISIBLE
             textField?.visibility = View.VISIBLE
+            recyclerView?.visibility = View.VISIBLE
             connecting?.visibility = View.INVISIBLE
         })
     }

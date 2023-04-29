@@ -29,6 +29,7 @@ class ChatActivity : AppCompatActivity() {
 
         //set up message adapter for recycler view
         val recyclerView = findViewById<RecyclerView>(R.id.messageRecyclerView)
+        recyclerView.visibility = View.INVISIBLE
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = messageAdapter
         messageAdapter.provideRecyclerView(recyclerView)
@@ -37,12 +38,13 @@ class ChatActivity : AppCompatActivity() {
         bMgr = BluetoothConnectionManager(this, this, recyclerView, messageAdapter)
         val device = intent.getStringExtra("device") as String
         title = device
-        if(device == "test")
+        if(device == "TEST")
         {
             val connectingText = findViewById<TextView>(R.id.ConnectingText)
             connectingText?.visibility = View.INVISIBLE
             button?.visibility = View.VISIBLE
             textField?.visibility = View.VISIBLE
+            recyclerView?.visibility = View.VISIBLE
 
             test = 1
         }

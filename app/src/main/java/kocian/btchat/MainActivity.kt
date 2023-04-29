@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     public fun populateSpinner(){
         //get names of BT devices and spinner reference
         var devices = bMgr?.getBluetoothDevicesNames()
-        devices?.add("test")
+        devices?.add("TEST")
         if(devices != null)
         {
             //if the device list is not null, fill the spinner
